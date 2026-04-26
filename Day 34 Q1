@@ -1,0 +1,56 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+void push(struct Node** top, int x) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = x;
+    newNode->next = *top;
+    *top = newNode;
+}
+
+int pop(struct Node** top) {
+    struct Node* temp = *top;
+    int val = temp->data;
+    *top = temp->next;
+    free(temp);
+    return val;
+}
+
+int main() {
+    char input[1000];
+    fgets(input, sizeof(input), stdin);
+
+    struct Node* stack = NULL;
+
+    char* token = strtok(input, " \n");
+
+    while (token != NULL) {
+        if (isdigit(token[0]) || 
+           (token[0] == '-' && isdigit(token[1]))) {
+            push(&stack, atoi(token));
+        } else {
+            int b = pop(&stack);
+            int a = pop(&stack);
+            int res;
+
+            if (token[0] == '+') res = a + b;
+            else if (token[0] == '-') res = a - b;
+            else if (token[0] == '*') res = a * b;
+            else if (token[0] == '/') res = a / b;
+
+            push(&stack, res);
+        }
+
+        token = strtok(NULL, " \n");
+    }
+
+    printf("%d", pop(&stack));
+    return 0;
+}
