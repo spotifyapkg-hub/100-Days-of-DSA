@@ -1,0 +1,148 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define MAX 1000
+
+// Structure for adjacency list node
+struct Node {
+    int vertex, weight;
+    struct Node* next;
+};
+
+// Min Heap Node
+struct HeapNode {
+    int vertex, dist;
+};
+
+// Min Heap
+struct MinHeap {
+    int size;
+    struct HeapNode heap[MAX];
+};
+
+// Create new adjacency node
+struct Node* createNode(int v, int w) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->vertex = v;
+    newNode->weight = w;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Insert edge (undirected)
+void addEdge(struct Node* adj[], int u, int v, int w) {
+    struct Node* newNode = createNode(v, w);
+    newNode->next = adj[u];
+    adj[u] = newNode;
+
+    newNode = createNode(u, w);
+    newNode->next = adj[v];
+    adj[v] = newNode;
+}
+
+// Swap heap nodes
+void swap(struct HeapNode* a, struct HeapNode* b) {
+    struct HeapNode temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Heapify (min heap)
+void heapify(struct MinHeap* heap, int i) {
+    int smallest = i;
+    int left = 2*i + 1;
+    int right = 2*i + 2;
+
+    if (left < heap->size && heap->heap[left].dist < heap->heap[smallest].dist)
+        smallest = left;
+
+    if (right < heap->size && heap->heap[right].dist < heap->heap[smallest].dist)
+        smallest = right;
+
+    if (smallest != i) {
+        swap(&heap->heap[i], &heap->heap[smallest]);
+        heapify(heap, smallest);
+    }
+}
+
+// Extract minimum
+struct HeapNode extractMin(struct MinHeap* heap) {
+    struct HeapNode root = heap->heap[0];
+    heap->heap[0] = heap->heap[heap->size - 1];
+    heap->size--;
+    heapify(heap, 0);
+    return root;
+}
+
+// Insert into heap
+void insertHeap(struct MinHeap* heap, int v, int dist) {
+    int i = heap->size++;
+    heap->heap[i].vertex = v;
+    heap->heap[i].dist = dist;
+
+    while (i && heap->heap[(i - 1) / 2].dist > heap->heap[i].dist) {
+        swap(&heap->heap[i], &heap->heap[(i - 1) / 2]);
+        i = (i - 1) / 2;
+    }
+}
+
+// Dijkstra function
+void dijkstra(struct Node* adj[], int n, int source) {
+    int dist[n + 1];
+
+    for (int i = 1; i <= n; i++)
+        dist[i] = INT_MAX;
+
+    dist[source] = 0;
+
+    struct MinHeap heap;
+    heap.size = 0;
+
+    insertHeap(&heap, source, 0);
+
+    while (heap.size > 0) {
+        struct HeapNode minNode = extractMin(&heap);
+        int u = minNode.vertex;
+
+        struct Node* temp = adj[u];
+
+        while (temp != NULL) {
+            int v = temp->vertex;
+            int w = temp->weight;
+
+            if (dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                insertHeap(&heap, v, dist[v]);
+            }
+
+            temp = temp->next;
+        }
+    }
+
+    // Print result
+    for (int i = 1; i <= n; i++) {
+        printf("%d ", dist[i]);
+    }
+}
+
+// -------- MAIN --------
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    struct Node* adj[MAX] = {NULL};
+
+    for (int i = 0; i < m; i++) {
+        int u, v, w;
+        scanf("%d %d %d", &u, &v, &w);
+        addEdge(adj, u, v, w);
+    }
+
+    int source;
+    scanf("%d", &source);
+
+    dijkstra(adj, n, source);
+
+    return 0;
+}
