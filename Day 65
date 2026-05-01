@@ -1,0 +1,66 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 100
+
+// Node for adjacency list
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+struct Node* adj[MAX];
+
+// Create new node
+struct Node* newNode(int v) {
+    struct Node* temp = (struct Node*)malloc(sizeof(struct Node));
+    temp->data = v;
+    temp->next = NULL;
+    return temp;
+}
+
+// Add edge (undirected)
+void addEdge(int u, int v) {
+    struct Node* temp = newNode(v);
+    temp->next = adj[u];
+    adj[u] = temp;
+
+    temp = newNode(u);
+    temp->next = adj[v];
+    adj[v] = temp;
+}
+
+// Print adjacency list
+void printGraph(int n) {
+    for (int i = 0; i < n; i++) {
+        printf("%d: ", i);
+        struct Node* temp = adj[i];
+        while (temp) {
+            printf("%d ", temp->data);
+            temp = temp->next;
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    // Initialize
+    for (int i = 0; i < n; i++)
+        adj[i] = NULL;
+
+    int u, v;
+
+    // Input edges
+    for (int i = 0; i < m; i++) {
+        scanf("%d %d", &u, &v);
+        addEdge(u, v);
+    }
+
+    // Output adjacency list
+    printGraph(n);
+
+    return 0;
+}
